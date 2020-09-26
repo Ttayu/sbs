@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "sbs"
+version = "0.1.0"
+description = ""
+authors = ["Ttayu <ykisoccer.pg@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+Pillow = "^7.2.0"
+numpy = "^1.19.2"
+python-pptx = "^0.6.18"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+sbs = "sbs.main:main"
