@@ -1,6 +1,6 @@
 import platform
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageOps
@@ -126,18 +126,21 @@ def tabulate_image(row: int, col: int, images: List[Image.Image]) -> List[Image.
 def preprocessing(
     image_path: Path,
     need_crop: bool = False,
-    resize_size: Optional[Iterable[int]] = None,
+    resize_size: Union[int, Tuple[int, int], None] = None,
     need_border: bool = False,
     need_draw_filename: bool = False,
 ) -> Image.Image:
-    assert isinstance(image_path, Path), "is not path"
+    if not isinstance(image_path, Path):
+        ValueError(f"image_path must be pathlib.Path objects, got {type(image_path)}")
     image = path2image(image_path)
     if need_crop:
         image = crop_image(image)
     if resize_size is not None:
-        assert isinstance(resize_size, (list, tuple))
-        assert len(resize_size) == 2
-        image = resize_image(image, tuple(resize_size))
+        if isinstance(resize_size, int):
+            resize_size = (resize_size, resize_size)
+        if len(resize_size) != 2:
+            ValueError(f"The dimensions must be 2, got {len(resize_size)}")
+        image = resize_image(image, resize_size)
     if need_border:
         image = add_border(image, border=(5, 0))
     if need_draw_filename:

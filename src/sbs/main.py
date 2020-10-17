@@ -13,15 +13,17 @@ def tabulate_image(args):
     preprocessor = partial(
         preprocessing,
         need_crop=args.crop,
-        resize_size=tuple(args.resize_size),
+        resize_size=args.resize_size,
         need_border=args.border,
         need_draw_filename=args.draw_filename,
     )
-    tabulate(args.input, args.output, args.row, args.col, preprocessor=preprocessor)
+    tabulate(
+        args.input, args.output, args.row, args.col, args.glob_pattern, preprocessor
+    )
 
 
 def paste_images_to_pptx(args):
-    paste_image(args.input, args.output, args.title)
+    paste_image(args.input, args.output, args.title, args.glob_pattern)
 
 
 def main():
@@ -46,6 +48,7 @@ def main():
     )
     parser_tabulate_image.add_argument("--border", action="store_true")
     parser_tabulate_image.add_argument("--draw_filename", action="store_true")
+    parser_tabulate_image.add_argument("--glob_pattern", default="*.png")
     parser_tabulate_image.set_defaults(handler=tabulate_image)
 
     # paste)images_to_pptx
@@ -66,6 +69,7 @@ def main():
     parser_paste_images_to_pptx.add_argument(
         "--title", type=str, help="Title of presentation."
     )
+    parser_paste_images_to_pptx.add_argument("--glob_pattern", default="*.png")
     parser_paste_images_to_pptx.set_defaults(handler=paste_images_to_pptx)
 
     args = parser.parse_args()
