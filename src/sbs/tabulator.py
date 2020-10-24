@@ -1,20 +1,38 @@
 import platform
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageOps
 
 
+def _is_pil_image(img: Image.Image):
+    return isinstance(img, Image.Image)
+
+
+def _check_tuple_type(value: Tuple[Any], type_: type):
+    return isinstance(value, tuple) and all([isinstance(v, type_) for v in value])
+
+
 def add_border(
-    img: Image.Image,
-    border: Union[int, Tuple[int, ...]],
-    color: Tuple[int, ...] = (128, 128, 128),
+    img: Image.Image, border_size: Union[int, Tuple[int, int]],
 ) -> Image.Image:
-    if isinstance(border, int) or isinstance(border, tuple):
-        border_img = ImageOps.expand(img, border=border, fill=color)
+    if not _is_pil_image(img):
+        raise ValueError(f"img must be PIL.Image, got {type(img)}")
+
+    if isinstance(border_size, int):
+        border_size = (border_size, border_size)
+
+    c = 0
+    if img.mode == "L":
+        color: Tuple[int, ...] = (c,)
+    elif img.mode == "RGB":
+        color = (c, c, c)
+    elif img.mode == "RGBA":
+        color = (c, c, c, c)
     else:
-        raise RuntimeError("Border is not an integer or tuple")
+        raise ValueError(f"{img.mode} doesn't support.")
+    border_img = ImageOps.expand(img, border=border_size, fill=color)
     return border_img
 
 
@@ -142,7 +160,7 @@ def preprocessing(
             ValueError(f"The dimensions must be 2, got {len(resize_size)}")
         image = resize_image(image, resize_size)
     if need_border:
-        image = add_border(image, border=(5, 0))
+        image = add_border(image, border_size=(5, 0))
     if need_draw_filename:
         image = draw_text(image, image_path.stem, text_color=(1, 1, 1))
     return image
