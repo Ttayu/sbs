@@ -161,6 +161,14 @@ def tabulate(
     image_files = list(input_dir.glob(glob_pattern))
     num_digits = len(str(len(image_files)))
 
+    if row < 0 and col < 0:
+        row = np.sqrt(len(image_files))
+        col = np.sqrt(len(image_files))
+    elif row < 0:
+        row = int(len(image_files) / col + 0.5)
+    elif col < 0:
+        col = int(len(image_files) / row + 0.5)
+
     images: List[Image.Image] = []
     for file in image_files:
         images.append(preprocessor(file))
