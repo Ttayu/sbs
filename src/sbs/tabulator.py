@@ -14,42 +14,62 @@ def _check_tuple_type(value: Tuple[Any], type_: type):
     return isinstance(value, tuple) and all([isinstance(v, type_) for v in value])
 
 
+def _get_color_list(img: Image.Image, value: int) -> Tuple[int, ...]:
+    if img.mode == "L":
+        color: Tuple[int, ...] = (value,)
+    elif img.mode == "RGB":
+        color = (value, value, value)
+    elif img.mode == "RGBA":
+        color = (value, value, value, value)
+    else:
+        raise ValueError(f"{img.mode} doesn't support.")
+    return color
+
+
 def add_border(img: Image.Image, border_width: int) -> Image.Image:
     if not _is_pil_image(img):
         raise ValueError(f"img must be PIL.Image, got {type(img)}")
-
-    c = 0
-    if img.mode == "L":
-        color: Tuple[int, ...] = (c,)
-    elif img.mode == "RGB":
-        color = (c, c, c)
-    elif img.mode == "RGBA":
-        color = (c, c, c, c)
-    else:
-        raise ValueError(f"{img.mode} doesn't support.")
+    color = _get_color_list(img, 0)
 
     border_img = ImageOps.expand(img, border=border_width // 2, fill=color)
     return border_img
 
 
-def trim_background(im: Image.Image) -> Image.Image:
-    im_background = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im, im_background)
+def trim_background(img: Image.Image) -> Image.Image:
+    im_background = Image.new(img.mode, img.size, img.getpixel((0, 0)))
+    diff = ImageChops.difference(img, im_background)
     croprange = diff.getbbox()
     if croprange is None:
-        return im
-    return im.crop(croprange)
+        return img
+    return img.crop(croprange)
 
 
-def resize_image(
-    im: Image.Image, size: Tuple[int, ...], keep_aspect: bool = True
-) -> Image.Image:
-    if keep_aspect:
-        im.thumbnail(size, Image.ANTIALIAS)
+def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
+    if isinstance(size, int):
+        size = (size, size)
+    bg_value = int(np.mean(img))
+    enlarge = img.size[0] < size[0] and img.size[1] < size[1]
+    if enlarge:
+        width, height = img.size
+        if width == height:
+            new_width = min(size)
+            new_height = min(size)
+        elif height < width:
+            new_width = size[0]
+            new_height = int(size[0] * height / width)
+        else:
+            new_height = size[1]
+            new_width = int(size[1] * width / height)
+        img = img.resize((new_width, new_height), Image.ANTIALIAS)
     else:
-        im = im.resize(size, Image.ANTIALIAS)
-    result_image = Image.new(im.mode, size, (0, 0, 0, 255))
-    result_image.paste(im, ((size[0] - im.size[0]) // 2, (size[1] - im.size[1]) // 2))
+        img.thumbnail(size, Image.ANTIALIAS)
+    background_color = (
+        bg_value if img.mode == "L" else (bg_value, bg_value, bg_value, 255)
+    )
+    result_image = Image.new(img.mode, size, background_color)
+    result_image.paste(
+        img, ((size[0] - img.size[0]) // 2, (size[1] - img.size[1]) // 2)
+    )
     return result_image
 
 
@@ -149,11 +169,7 @@ def preprocessing(
     if need_trim_background:
         image = trim_background(image)
     if resize_size is not None:
-        if isinstance(resize_size, int):
-            resize_size = (resize_size, resize_size)
-        if len(resize_size) != 2:
-            ValueError(f"The dimensions must be 2, got {len(resize_size)}")
-        image = resize_image(image, resize_size)
+        image = resize(image, resize_size)
     if border_width is not None:
         image = add_border(image, border_width=border_width)
     if need_draw_filename:
