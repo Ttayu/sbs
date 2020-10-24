@@ -14,7 +14,7 @@ def tabulate_image(args):
         preprocessing,
         need_crop=args.crop,
         resize_size=args.resize_size,
-        need_border=args.border,
+        border_width=args.border_width,
         need_draw_filename=args.draw_filename,
     )
     tabulate(
@@ -34,9 +34,7 @@ def main():
     parser_tabulate_image = subparsers.add_parser(
         "tabulate_image", help="Arange images in the grid. see `tabulate_image -h`"
     )
-    parser_tabulate_image.add_argument(
-        "-i", "--input", type=Path, required=True, help="input dir"
-    )
+    parser_tabulate_image.add_argument("input", type=Path, help="input dir")
     parser_tabulate_image.add_argument(
         "-o", "--output", default=None, type=Path, help="output dir"
     )
@@ -46,9 +44,9 @@ def main():
     parser_tabulate_image.add_argument(
         "--resize_size", nargs="+", type=int, default=None
     )
-    parser_tabulate_image.add_argument("--border", action="store_true")
+    parser_tabulate_image.add_argument("--border_width", type=int, default=None)
     parser_tabulate_image.add_argument("--draw_filename", action="store_true")
-    parser_tabulate_image.add_argument("--glob_pattern", default="*.png")
+    parser_tabulate_image.add_argument("-g", "--glob_pattern", default="*.png")
     parser_tabulate_image.set_defaults(handler=tabulate_image)
 
     # paste)images_to_pptx
@@ -57,11 +55,7 @@ def main():
         help="Paste images to pptx. see `paste_images_to_pptx -h`",
     )
     parser_paste_images_to_pptx.add_argument(
-        "-i",
-        "--input",
-        type=Path,
-        required=True,
-        help="input directory for tabulated images",
+        "input", type=Path, help="input directory for tabulated images",
     )
     parser_paste_images_to_pptx.add_argument(
         "-o", "--output", type=Path, help="output powerpoint"

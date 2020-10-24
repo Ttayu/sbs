@@ -40,8 +40,5 @@ testdata = ["grayscale", "rgb", "rgba"]
 @pytest.mark.parametrize("image", testdata)
 def test_add_border(image, get_fixture_values):
     image = get_fixture_values(image)
-    border_int = 5
-    tabulator.add_border(image, border_int)
-
-    border_tuple = (3, 5)
-    tabulator.add_border(image, border_tuple)
+    border_width = np.random.randint(0, 10)
+    tabulator.add_border(image, border_width)
