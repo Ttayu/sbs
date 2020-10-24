@@ -162,8 +162,8 @@ def tabulate(
     num_digits = len(str(len(image_files)))
 
     if row < 0 and col < 0:
-        row = np.sqrt(len(image_files))
-        col = np.sqrt(len(image_files))
+        row = int(np.sqrt(len(image_files)))
+        col = int(np.sqrt(len(image_files)))
     elif row < 0:
         row = int(len(image_files) / col + 0.5)
     elif col < 0:
