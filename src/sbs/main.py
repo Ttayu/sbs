@@ -12,7 +12,7 @@ def tabulate_image(args):
     args.output.mkdir(exist_ok=True)
     preprocessor = partial(
         preprocessing,
-        need_crop=args.crop,
+        need_trim_background=args.trim,
         resize_size=args.resize_size,
         border_width=args.border_width,
         need_draw_filename=args.draw_filename,
@@ -40,7 +40,9 @@ def main():
     )
     parser_tabulate_image.add_argument("-r", "--row", default=-1, type=int)
     parser_tabulate_image.add_argument("-c", "--col", default=-1, type=int)
-    parser_tabulate_image.add_argument("--crop", action="store_true")
+    parser_tabulate_image.add_argument(
+        "--trim", action="store_true", help="trim background from image."
+    )
     parser_tabulate_image.add_argument(
         "--resize_size", nargs="+", type=int, default=None
     )

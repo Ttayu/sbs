@@ -32,11 +32,10 @@ def add_border(img: Image.Image, border_width: int) -> Image.Image:
     return border_img
 
 
-def crop_image(im: Image.Image) -> Image.Image:
-    im_rgb = im.convert("RGB")
-    im_background = Image.new("RGB", im_rgb.size, im_rgb.getpixel((0, 0)))
-    diff = ImageChops.difference(im_rgb, im_background)
-    croprange = diff.convert("RGB").getbbox()
+def trim_background(im: Image.Image) -> Image.Image:
+    im_background = Image.new(im.mode, im.size, im.getpixel((0, 0)))
+    diff = ImageChops.difference(im, im_background)
+    croprange = diff.getbbox()
     if croprange is None:
         return im
     return im.crop(croprange)
@@ -139,7 +138,7 @@ def tabulate_image(row: int, col: int, images: List[Image.Image]) -> List[Image.
 
 def preprocessing(
     image_path: Path,
-    need_crop: bool = False,
+    need_trim_background: bool = False,
     resize_size: Union[int, Tuple[int, int], None] = None,
     border_width: Optional[int] = None,
     need_draw_filename: bool = False,
@@ -147,8 +146,8 @@ def preprocessing(
     if not isinstance(image_path, Path):
         ValueError(f"image_path must be pathlib.Path objects, got {type(image_path)}")
     image = path2image(image_path)
-    if need_crop:
-        image = crop_image(image)
+    if need_trim_background:
+        image = trim_background(image)
     if resize_size is not None:
         if isinstance(resize_size, int):
             resize_size = (resize_size, resize_size)
