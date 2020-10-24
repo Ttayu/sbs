@@ -54,7 +54,7 @@ class PowerPoint(Presentation):
 
     def add_contents(self, title: str = "title", contents: str = "") -> None:
         self.add_slide(SlideMaster.Contents)
-        self.update_title(title, contents)
+        self.update_contents(title, contents)
 
     def update_contents(self, title: str = "title", contents: str = "") -> None:
         assert self.last_slide == SlideMaster.Contents

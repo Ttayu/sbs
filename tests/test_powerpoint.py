@@ -11,7 +11,7 @@ def test_powerpoint():
 
 def test_add_title():
     ppt = PowerPoint()
-    ppt.add_main(title="title", name="name")
+    ppt.add_title(title="title", name="name")
 
 
 def test_add_contents():
