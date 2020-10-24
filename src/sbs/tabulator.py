@@ -63,7 +63,7 @@ def draw_text(
     crop_range[1] -= font_size
     img = img.crop(crop_range)
     draw = ImageDraw.Draw(img)
-    draw.font = ImageFont.truetype(get_font, font_size)
+    draw.font = ImageFont.truetype(get_font(), font_size)
     text_size = draw.font.getsize(text)
     pos = ((img_size[0] - text_size[0]) // 2, 0)
     pos = (0, 0)
