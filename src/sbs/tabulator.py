@@ -27,7 +27,8 @@ def add_border(img: Image.Image, border_width: int) -> Image.Image:
         color = (c, c, c, c)
     else:
         raise ValueError(f"{img.mode} doesn't support.")
-    border_img = ImageOps.expand(img, border=border_width, fill=color)
+
+    border_img = ImageOps.expand(img, border=border_width // 2, fill=color)
     return border_img
 
 
