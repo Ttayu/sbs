@@ -8,7 +8,7 @@ import pptx
 from PIL import Image
 from pptx.presentation import Presentation
 
-TEMPLATE = Path(__file__).parents[2] / "source" / "./template.pptx"
+TEMPLATE = Path(__file__).parents[2] / "resources" / "./template.pptx"
 
 
 class SlideMaster(IntEnum):
