@@ -15,7 +15,7 @@ def tabulate_image(args):
         need_trim_background=args.trim,
         resize_size=args.resize_size,
         border_width=args.border_width,
-        need_draw_filename=args.draw_filename,
+        need_draw_filename=args.draw,
     )
     tabulate(
         args.input, args.output, args.row, args.col, args.glob_pattern, preprocessor
@@ -47,7 +47,9 @@ def main():
         "--resize_size", nargs="+", type=int, default=None
     )
     parser_tabulate_image.add_argument("--border_width", type=int, default=None)
-    parser_tabulate_image.add_argument("--draw_filename", action="store_true")
+    parser_tabulate_image.add_argument(
+        "--draw", action="store_true", help="Draw filename on top of image."
+    )
     parser_tabulate_image.add_argument("-g", "--glob_pattern", default="*.png")
     parser_tabulate_image.set_defaults(handler=tabulate_image)
 

@@ -1,4 +1,5 @@
 import platform
+import textwrap
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
@@ -47,6 +48,9 @@ def trim_background(img: Image.Image) -> Image.Image:
 def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
     if isinstance(size, int):
         size = (size, size)
+    elif len(size) == 1:
+        size = (size[0], size[0])
+
     bg_value = int(np.mean(img))
     enlarge = img.size[0] < size[0] and img.size[1] < size[1]
     if enlarge:
@@ -65,6 +69,7 @@ def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
         img.thumbnail(size, Image.ANTIALIAS)
     background_color = (
         bg_value if img.mode == "L" else (bg_value, bg_value, bg_value, 255)
+        # _get_color_list(img, bg_value)
     )
     result_image = Image.new(img.mode, size, background_color)
     result_image.paste(
@@ -73,7 +78,7 @@ def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
     return result_image
 
 
-def get_font():
+def _get_font_path():
     pf = platform.system()
     if pf == "Windows":
         return "C:/Windows/fonts/Times New Roman/times.ttf"
@@ -85,27 +90,31 @@ def get_font():
     # "/mnt/c/Windows/Fonts/times.ttf"
 
 
-def draw_text(
-    img: Image.Image, text: Optional[str] = None, text_color=(0, 0, 0)
-) -> Image.Image:
+def draw_text(img: Image.Image, text: Optional[str] = None) -> Image.Image:
     if text is None:
         return img
-    img_size = img.size
-    font_size = img.size[1] // 16  # 8 is manual parameter
+    img_fraction = 16
+    font_size = img.size[1] // img_fraction
     crop_range = np.array(img.getbbox())
     crop_range[1] -= font_size
     img = img.crop(crop_range)
     draw = ImageDraw.Draw(img)
-    draw.font = ImageFont.truetype(get_font(), font_size)
-    text_size = draw.font.getsize(text)
-    pos = ((img_size[0] - text_size[0]) // 2, 0)
-    pos = (0, 0)
-    draw.text(pos, text, text_color)
+    draw.font = ImageFont.truetype(_get_font_path(), font_size)
+
+    if draw.font.getsize(text)[0] > img.size[0]:
+        size = img.size[0] / draw.font.getsize(text)[0] * len(text)
+        space = 2
+        text = "\n".join(textwrap.wrap(text, int(size) - space))
+
+    text_color = _get_color_list(img, 255)
+    draw.text((0, 0), text, text_color)
     return img
 
 
-def path2image(path: Path) -> Image.Image:
-    return Image.open(str(path))
+def path2image(image_path: Path) -> Image.Image:
+    if not isinstance(image_path, Path):
+        ValueError(f"image_path must be pathlib.Path objects, got {type(image_path)}")
+    return Image.open(str(image_path))
 
 
 def concatenate_images(images: List[Image.Image], mode: str) -> Image.Image:
@@ -163,8 +172,6 @@ def preprocessing(
     border_width: Optional[int] = None,
     need_draw_filename: bool = False,
 ) -> Image.Image:
-    if not isinstance(image_path, Path):
-        ValueError(f"image_path must be pathlib.Path objects, got {type(image_path)}")
     image = path2image(image_path)
     if need_trim_background:
         image = trim_background(image)
@@ -173,7 +180,7 @@ def preprocessing(
     if border_width is not None:
         image = add_border(image, border_width=border_width)
     if need_draw_filename:
-        image = draw_text(image, image_path.stem, text_color=(1, 1, 1))
+        image = draw_text(image, image_path.stem)
     return image
 
 
