@@ -21,7 +21,7 @@ def _get_color_list(img: Image.Image, value: int) -> Tuple[int, ...]:
     elif img.mode == "RGB":
         color = (value, value, value)
     elif img.mode == "RGBA":
-        color = (value, value, value, value)
+        color = (value, value, value, 255)
     else:
         raise ValueError(f"{img.mode} doesn't support.")
     return color
@@ -51,7 +51,6 @@ def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
     elif len(size) == 1:
         size = (size[0], size[0])
 
-    bg_value = int(np.mean(img))
     enlarge = img.size[0] < size[0] and img.size[1] < size[1]
     if enlarge:
         width, height = img.size
@@ -67,10 +66,7 @@ def resize(img: Image.Image, size: Union[int, Tuple[int, int]]) -> Image.Image:
         img = img.resize((new_width, new_height), Image.ANTIALIAS)
     else:
         img.thumbnail(size, Image.ANTIALIAS)
-    background_color = (
-        bg_value if img.mode == "L" else (bg_value, bg_value, bg_value, 255)
-        # _get_color_list(img, bg_value)
-    )
+    background_color = _get_color_list(img, 1)
     result_image = Image.new(img.mode, size, background_color)
     result_image.paste(
         img, ((size[0] - img.size[0]) // 2, (size[1] - img.size[1]) // 2)
@@ -95,9 +91,6 @@ def draw_text(img: Image.Image, text: Optional[str] = None) -> Image.Image:
         return img
     img_fraction = 16
     font_size = img.size[1] // img_fraction
-    crop_range = np.array(img.getbbox())
-    crop_range[1] -= font_size
-    img = img.crop(crop_range)
     draw = ImageDraw.Draw(img)
     draw.font = ImageFont.truetype(_get_font_path(), font_size)
 
@@ -177,10 +170,10 @@ def preprocessing(
         image = trim_background(image)
     if resize_size is not None:
         image = resize(image, resize_size)
-    if border_width is not None:
-        image = add_border(image, border_width=border_width)
     if need_draw_filename:
         image = draw_text(image, image_path.stem)
+    if border_width is not None:
+        image = add_border(image, border_width=border_width)
     return image
 
 
